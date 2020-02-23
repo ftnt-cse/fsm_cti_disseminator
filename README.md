@@ -1,0 +1,2 @@
+# fsm_cti_disseminator
+The script main purpose is for FortiSIEM to disseminate Threat Intelligence such as md5, sha1, sha256 from paid or open-source CTI on Fortinet Security Fabric via FortiSIEM and FortiSandbox. It automates bulk file hashes blacklisting via a FortiSIEM Malware Hash Group and a custom remediation script. If any of the uploaded indicators is seen by FortiClient, FortiGate, FortiWeb or any fabric device, an action is taken immediately.
