@@ -1,0 +1,27 @@
+<rules><DataRequest advanced="true" custId="0" dataChangeType="SYSTEM" dataCreationType="USER" dbId="26945251" debug="false" entityVersion="8" fireInternalIncident="true" functionCategory="Change" id="26945251" phIncidentCategory="Internal" subFunction="PH_RULE_CHANGE_Audit" type="Rule">
+<Name>HASHBLACKLIST Malware list Updated</Name>
+<Description>HASHBLACKLIST Malware list Updated</Description>
+<Remediation/>
+<CustomerScope groupByEachCustomer="true">
+<Include/>
+<Exclude/>
+</CustomerScope>
+<PatternClause window="600">
+<SubPattern id="26945302" name="Update">
+<SingleEvtConstr>rawEventMsg CONTAIN "PH_AUDIT_OBJECT_UPDATED"  AND  phEventCategory = 2  AND  rawEventMsg CONTAIN "CTIBLACKLIST"</SingleEvtConstr>
+<GroupEvtConstr>COUNT(*) &gt;= 1</GroupEvtConstr>
+<GroupByAttr>phCustId</GroupByAttr>
+</SubPattern>
+</PatternClause>
+<IncidentDef eventType="HASHBLACKLIST_Malware_list_Updated" eventTypeGroup="PH_SYS_EVENT_PH_RULE_CHANGE" fireFreq="86400" severity="4">
+<ArgList>phCustId=Update.phCustId</ArgList>
+</IncidentDef>
+<DynWatchListDef/>
+<userRoles>
+<roles custId="0">1170800</roles>
+</userRoles>
+<TriggerEventDisplay>
+<AttrList>phRecvTime,phCustId,rawEventMsg</AttrList>
+</TriggerEventDisplay>
+</DataRequest>
+</rules>
