@@ -1,9 +1,16 @@
+
+
 #!/usr/bin/env python2
 # Blacklist on FortiSandbox a list of specific FortiSIEM malware Haches list
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND
+# Changelog: Added support to run the remediation from either a collector or super.
+__license__ = "GPL"
+__version__ = "0.3"
 
 import pg8000 as dbapi
 import sys
+import os
+import re
 import json
 from   base64 import b64encode, b64decode
 import hashlib # For SHA-256 Encoding
@@ -16,6 +23,7 @@ MAX_IOC_COUNT='50000'
 QUARANTINE_SECONDS=86400 # 1 day
 
 # Internal Settings
+#phLicenseTool --showDatabasePassword # <== get db passwd on super with this command and paste it in db_password
 db_username='phoenix'
 db_password=''
 
@@ -25,6 +33,21 @@ mUser 			= sys.argv[2]
 mPassword 		= sys.argv[3]
 mSuperPassword	= sys.argv[4]
 mAccessIp 		= sys.argv[5]
+
+
+def get_super_ip():
+	for line in open("/opt/phoenix/config/phoenix_config.txt"):
+		if "MON_ROLE=" in line:
+			role = line.split('=')[1]
+	if not role:
+		print('cannot determine FSM Supervisor IP')
+		exit()
+	if 'phMonitorSupervisor' in role:
+		return '127.0.0.1'
+	elif 'phMonitorAgent' in role:
+		for file in os.listdir('/opt/phoenix/cache/'):
+			if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",file):
+				return file
 
 def pg_query(username,password,query,host='127.0.0.1',database='phoenixdb',port=5432):
 	records=[]
@@ -132,8 +155,9 @@ def json_fsa_white_black_list_update(server,username, password, algorithm, encod
 def main():
 
 	# Query DB for hash list
+	super_ip=get_super_ip()
 	json_records={'md5':[],'sha1':[],'sha256':[]}
-	records=pg_query(db_username,db_password,"select algorithm,hash,asn from ph_malware_hash where asn='1492' LIMIT " + MAX_IOC_COUNT)
+	records=pg_query(db_username,db_password,"select algorithm,hash,asn from ph_malware_hash where asn='1492' LIMIT " + MAX_IOC_COUNT,super_ip)
 	if len(records) <= 1:
 		print('No records found, make sure you have a malware group populated in FSM')
 		exit()
